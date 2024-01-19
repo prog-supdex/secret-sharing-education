@@ -14,7 +14,7 @@ import (
 
 const (
 	TempFilePath = "../testdata/temp_data.json"
-	SecretId     = "d0b2fa28502506a01bb074879eaa083d"
+	DataId       = "d0b2fa28502506a01bb074879eaa083d"
 )
 
 func TestCreateSecret(t *testing.T) {
@@ -72,7 +72,7 @@ func TestGetSecret(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(secretHandler))
 	defer testServer.Close()
 
-	resp, err := testServer.Client().Get(testServer.URL + "/" + SecretId)
+	resp, err := testServer.Client().Get(testServer.URL + "/" + DataId)
 	if err != nil {
 		t.Errorf("Error creating request: %v", err)
 		return
