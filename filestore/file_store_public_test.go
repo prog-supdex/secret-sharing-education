@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	DataFilePath    = "../testdata/temp_data.json"
-	SecretDataId    = "74e1d3f50df786aef9f602419dc88784"
-	SecretDataValue = "SecretValue"
+	DataFilePath = "../testdata/temp_data.json"
+	DataId       = "74e1d3f50df786aef9f602419dc88784"
+	DataValue    = "SecretValue"
 )
 
 func TestInit(t *testing.T) {
@@ -62,14 +62,14 @@ func TestRead(t *testing.T) {
 		t.Error("Write function error:", err)
 	}
 
-	val, err := filestore.FileStoreConfig.Fs.Read(SecretDataId)
+	val, err := filestore.FileStoreConfig.Fs.Read(DataId)
 
 	if err != nil {
 		t.Error("Read function error:", err)
 	}
 
-	if val != SecretDataValue {
-		t.Error("incorrect value:", val, SecretDataValue)
+	if val != DataValue {
+		t.Error("incorrect value:", val, DataValue)
 	}
 }
 
@@ -77,8 +77,8 @@ func writeTestFile() error {
 	filestore.Init(DataFilePath)
 
 	secretData := types.SecretData{
-		Id:     SecretDataId,
-		Secret: SecretDataValue,
+		Id:     DataId,
+		Secret: DataValue,
 	}
 
 	return filestore.FileStoreConfig.Fs.Write(secretData)
