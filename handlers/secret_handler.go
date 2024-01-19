@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"runtime/debug"
 	"strings"
 
 	"github.com/prog-supdex/mini-project/milestone-code/filestore"
@@ -33,9 +32,8 @@ func createSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p := types.CreateSecretPayload{}
-	err = json.Unmarshal(bytes, &p)
 
-	if err != nil {
+	if err := json.Unmarshal(bytes, &p); err != nil {
 		log.Fatal(err)
 	}
 
@@ -43,16 +41,14 @@ func createSecret(w http.ResponseWriter, r *http.Request) {
 	resp := types.CreateSecretResponse{Id: digest}
 
 	s := types.SecretData{Id: resp.Id, Secret: p.PlainText}
-	err = filestore.FileStoreConfig.Fs.Write(s)
-	// todo error handling
-	if err != nil {
+	if err := filestore.FileStoreConfig.Fs.Write(s); err != nil {
 		log.Fatal(err)
 	}
 
 	jd, err := json.Marshal(&resp)
 
 	if err != nil {
-		log.Printf("%v\n%s", err, debug.Stack())
+		log.Fatal(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

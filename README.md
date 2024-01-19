@@ -33,3 +33,8 @@ It will respond a decrypted secret
 {"data":"My super secret"}
 ```
 
+## A little dev description
+
+The `filestore` package is responsible for reading and writing data to/from a file.
+The file `handlers/secret_handler` writes a new secret to a file when the http method is `POST` and reads from the file,
+when the http method is `GET`.
