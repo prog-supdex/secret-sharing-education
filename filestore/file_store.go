@@ -3,7 +3,6 @@ package filestore
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -51,8 +50,7 @@ func (j *fileStore) Write(data types.SecretData) error {
 		return err
 	}
 
-	err = os.WriteFile(FileStoreConfig.DataFilePath, byteValue, 0664)
-	if err != nil {
+	if err := os.WriteFile(FileStoreConfig.DataFilePath, byteValue, 0664); err != nil {
 		return err
 	}
 
@@ -70,7 +68,7 @@ func (j *fileStore) Read(id string) (string, error) {
 	}
 
 	decryptedValue, exists := fileContent[id]
-	fmt.Println(fileContent, id)
+
 	if !exists {
 		return "", errors.New("value is not present")
 	}
@@ -91,9 +89,7 @@ func readJson(path string) (map[string]string, error) {
 
 	var data map[string]string
 
-	err = json.Unmarshal(byteValue, &data)
-
-	if err != nil {
+	if err := json.Unmarshal(byteValue, &data); err != nil {
 		return nil, err
 	}
 
