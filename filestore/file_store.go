@@ -3,6 +3,7 @@ package filestore
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -33,9 +34,6 @@ func Init(dataFilePath string) error {
 	FileStoreConfig.DataFilePath = dataFilePath
 	return nil
 }
-
-// todo define functions for reading and writing from/to the filestore
-// example signatures shown below
 
 func (j *fileStore) Write(data types.SecretData) error {
 	j.Mu.Lock()
@@ -71,8 +69,8 @@ func (j *fileStore) Read(id string) (string, error) {
 		log.Fatal(err)
 	}
 
-	decryptedValue, exists := getSecretValue(fileContent, id)
-
+	decryptedValue, exists := fileContent[id]
+	fmt.Println(fileContent, id)
 	if !exists {
 		return "", errors.New("value is not present")
 	}
@@ -100,9 +98,4 @@ func readJson(path string) (map[string]string, error) {
 	}
 
 	return data, nil
-}
-
-func getSecretValue(data map[string]string, secretHash string) (string, bool) {
-	value, exists := data[secretHash]
-	return value, exists
 }
