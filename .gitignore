@@ -2,3 +2,4 @@ go.work
 *data.json
 !important.log
 .idea
+secret-app
