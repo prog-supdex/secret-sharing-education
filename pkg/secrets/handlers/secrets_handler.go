@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets"
+	"log"
 	"net/http"
 )
 
@@ -62,7 +63,11 @@ func (h handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jd)
+
+	_, err = w.Write(jd)
+	if err != nil {
+		log.Printf("Write failed: %v", err)
+	}
 }
 
 func (h handler) GetSecret(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +101,11 @@ func (h handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	if len(resp.Data) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 	}
-	w.Write(jd)
+
+	_, err = w.Write(jd)
+	if err != nil {
+		log.Printf("Write failed: %v", err)
+	}
 }
 
 func (h handler) Routes() map[string]http.Handler {
