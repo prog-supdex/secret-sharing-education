@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"path/filepath"
 )
 
 type Config struct {
@@ -19,7 +18,7 @@ func New() *Config {
 		log.Fatal(err)
 	}
 
-	return &Config{RootPath: filepath.Join(currentPath, "../../")}
+	return &Config{RootPath: currentPath}
 }
 
 func (c Config) FullFilePath() string {
