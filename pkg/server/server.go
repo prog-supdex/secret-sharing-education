@@ -2,46 +2,34 @@ package server
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/prog-supdex/mini-project/milestone-code/pkg/config"
-	"github.com/prog-supdex/mini-project/milestone-code/pkg/filestore"
-	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets"
-	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets/handlers"
 	"log"
 	"net/http"
 )
 
 type Server struct {
-	port          string
-	secretManager secrets.Manager
+	port string
+	mux  *mux.Router
 }
 
-func New(c config.Config) (*Server, error) {
-	fileStore, err := filestore.New(c.FullFilePath())
+type RoutesMapping map[string]http.Handler
 
-	if err != nil {
-		return nil, err
-	}
-
-	secretManager := secrets.NewSecretManager(fileStore)
-
+func New(c Config) (*Server, error) {
 	return &Server{
-		port:          c.ServerPort,
-		secretManager: secretManager,
+		port: c.ServerPort,
+		mux:  mux.NewRouter(),
 	}, nil
 }
 
 func (s Server) Run() {
-	r := mux.NewRouter()
-
-	handlers.NewSecretHandler(s.secretManager).RegisterHandler(r)
-
-	r.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("ok"))
-	})
-
-	err := http.ListenAndServe(s.port, r)
+	err := http.ListenAndServe(s.port, s.mux)
 
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
+	}
+}
+
+func (s Server) Mount(routes RoutesMapping) {
+	for path, handler := range routes {
+		s.mux.Handle(path, handler)
 	}
 }

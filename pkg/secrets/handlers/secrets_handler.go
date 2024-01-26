@@ -22,7 +22,7 @@ type GetSecretResponse struct {
 type Handler interface {
 	CreateSecret(w http.ResponseWriter, r *http.Request)
 	GetSecret(w http.ResponseWriter, r *http.Request)
-	RegisterHandler(r *mux.Router)
+	Routes() map[string]http.Handler
 }
 
 type handler struct {
@@ -33,13 +33,13 @@ func NewSecretHandler(s secrets.Manager) Handler {
 	return handler{s}
 }
 
-func (h handler) RegisterHandler(r *mux.Router) {
-	r.HandleFunc("/", h.CreateSecret).Methods("POST")
-	r.HandleFunc("/{hash:[0-9a-fA-F]{32}}", h.GetSecret).Methods("GET")
-}
-
 func (h handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	if r.Method != "POST" {
+		w.WriteHeader(422)
+		return
+	}
 
 	requestBody := RequestBodyPayload{}
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
@@ -66,6 +66,11 @@ func (h handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handler) GetSecret(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(422)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id := vars["hash"]
 	if len(id) == 0 {
@@ -92,4 +97,11 @@ func (h handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 	w.Write(jd)
+}
+
+func (h handler) Routes() map[string]http.Handler {
+	return map[string]http.Handler{
+		"/":                       http.HandlerFunc(h.CreateSecret),
+		"/{hash:[0-9a-fA-F]{32}}": http.HandlerFunc(h.GetSecret),
+	}
 }

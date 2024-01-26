@@ -34,7 +34,9 @@ func TestCreateSecretHandler(t *testing.T) {
 	h := handlers.NewSecretHandler(mockManager)
 
 	router := mux.NewRouter()
-	h.RegisterHandler(router)
+	for path, handler := range h.Routes() {
+		router.Handle(path, handler)
+	}
 
 	payload := handlers.RequestBodyPayload{
 		PlainText: "mock_id",
@@ -64,7 +66,9 @@ func TestGetSecretHandler(t *testing.T) {
 	h := handlers.NewSecretHandler(mockManager)
 
 	router := mux.NewRouter()
-	h.RegisterHandler(router)
+	for path, handler := range h.Routes() {
+		router.Handle(path, handler)
+	}
 
 	req := httptest.NewRequest("GET", "/"+MockId, nil)
 	w := httptest.NewRecorder()

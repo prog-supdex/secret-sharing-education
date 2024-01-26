@@ -6,9 +6,13 @@ import (
 	"flag"
 	"fmt"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/config"
+	"github.com/prog-supdex/mini-project/milestone-code/pkg/filestore"
+	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets"
+	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets/handlers"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/server"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/version"
 	"github.com/sethvargo/go-envconfig"
+	"net/http"
 	"os"
 )
 
@@ -21,7 +25,7 @@ func init() {
 func Run() error {
 	flag.Parse()
 	if showVersion {
-		fmt.Printf("Version: %s", version.Version())
+		fmt.Print(version.Version())
 		os.Exit(0)
 	}
 
@@ -30,14 +34,28 @@ func Run() error {
 		return err
 	}
 
-	if cfg.DataFilePath == "" {
+	if cfg.Filestore.DataFilePath == "" {
 		return errors.New("ENV DATA_FILE_PATH is blank")
 	}
 
-	srv, err := server.New(*cfg)
+	fileStore, err := filestore.New(cfg.Filestore.FullFilePath())
 	if err != nil {
 		return err
 	}
+
+	srv, err := server.New(cfg.Server)
+	if err != nil {
+		return err
+	}
+
+	secretManager := secrets.NewSecretManager(fileStore)
+	secretHandler := handlers.NewSecretHandler(secretManager)
+
+	routes := secretHandler.Routes()
+	// Add HealthHandler to map
+	routes[cfg.HealthPath] = http.HandlerFunc(server.HealthHandler)
+
+	srv.Mount(routes)
 
 	srv.Run()
 
@@ -47,7 +65,7 @@ func Run() error {
 func initConfig() (*config.Config, error) {
 	ctx := context.Background()
 	cfg := config.New()
-	err := envconfig.Process(ctx, cfg)
+	err := envconfig.Process(ctx, &cfg)
 
-	return cfg, err
+	return &cfg, err
 }

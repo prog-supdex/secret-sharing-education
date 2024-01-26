@@ -8,13 +8,13 @@ import (
 	"sync"
 )
 
-type fileStore struct {
-	Mu           sync.Mutex
+type FileStore struct {
+	mu           sync.Mutex
 	dataFilePath string
 	Store        map[string]string
 }
 
-func New(dataFilePath string) (secrets.Storage, error) {
+func New(dataFilePath string) (*FileStore, error) {
 	_, err := os.Stat(dataFilePath)
 
 	if err != nil {
@@ -24,7 +24,7 @@ func New(dataFilePath string) (secrets.Storage, error) {
 		}
 	}
 
-	fs := &fileStore{Mu: sync.Mutex{}, Store: make(map[string]string), dataFilePath: dataFilePath}
+	fs := &FileStore{mu: sync.Mutex{}, Store: make(map[string]string), dataFilePath: dataFilePath}
 
 	if err := fs.load(); err != nil {
 		return nil, err
@@ -33,18 +33,18 @@ func New(dataFilePath string) (secrets.Storage, error) {
 	return fs, nil
 }
 
-func (fs *fileStore) Write(data secrets.SecretData) error {
-	fs.Mu.Lock()
-	defer fs.Mu.Unlock()
+func (fs *FileStore) Write(data secrets.SecretData) error {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
 
 	fs.Store[data.Id] = data.Secret
 
 	return fs.save()
 }
 
-func (fs *fileStore) Read(id string) (string, error) {
-	fs.Mu.Lock()
-	defer fs.Mu.Unlock()
+func (fs *FileStore) Read(id string) (string, error) {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
 
 	secret, exists := fs.Store[id]
 	if !exists {
@@ -54,7 +54,7 @@ func (fs *fileStore) Read(id string) (string, error) {
 	return secret, nil
 }
 
-func (fs *fileStore) save() error {
+func (fs *FileStore) save() error {
 	byteValue, err := json.Marshal(fs.Store)
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (fs *fileStore) save() error {
 	return os.WriteFile(fs.dataFilePath, byteValue, 0664)
 }
 
-func (fs *fileStore) load() error {
+func (fs *FileStore) load() error {
 	byteValue, err := os.ReadFile(fs.dataFilePath)
 	if err != nil {
 		return err
