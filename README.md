@@ -10,10 +10,17 @@ This web application allows you to create and view your secrets for a specific f
 Where `DATA_FILE_PATH` is a path for a file that will store your secrets
 The default value for `DATA_FILE_PATH` is `./data.json`
 
+Also, you can set these variables via CLI
+
+```bash
+./dist/secret-share-web --port 8181 --file_path test_data.json
+```
+
 if needed to check the project's version, you can use flag `-v`
 ```bash
-./secret-app -v
+./dist/secret-share-web -v
 ```
+
 ### Other commands:
 
 Run Golang tests
