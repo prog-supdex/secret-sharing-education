@@ -4,14 +4,19 @@ This web application allows you to create and view your secrets for a specific f
 
 ## Running the App
 
-1. `go build -o secret-app`
+1. `go build -o secret-app cmd/secret-share-web/main.go`
 
 2. `DATA_FILE_PATH=./data.json ./secret-app`
 
 Where `DATA_FILE_PATH` is a path for a file that will store your secrets
 
+if needed to check the project's version, you can use flag `-v`
+```bash
+./secret-app -v
+```
+
 ## API
-1. GET `/healthcheck` - checks the server status
+1. `curl http://localhost:8080/healthcheck` - checks the server status
 2. Save your secret
 ```bash
 curl -X POST http://localhost:8080 -d '{"plain_text":"My super secret"}'
@@ -32,9 +37,3 @@ It will respond to a decrypted secret
 ```json
 {"data":"My super secret"}
 ```
-
-## A little dev description
-
-The `filestore` package is responsible for reading and writing data to/from a file.
-The file `handlers/secret_handler` writes a new secret to a file when the HTTP method is `POST` and reads from the file
-when the http method is `GET`.

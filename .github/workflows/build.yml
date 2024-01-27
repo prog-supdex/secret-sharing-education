@@ -19,7 +19,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Install dependencies
-        run: go get .
+        run: go get ./cmd/secret-share-web
       - name: Build
         run: go build -v ./...
       - name: Test with the Go CLI

@@ -1,4 +1,5 @@
 go.work
 *data.json
-!important.log
+!temp_data.json
 .idea
+secret-app
