@@ -6,7 +6,6 @@ import (
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets/handlers"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/server"
-	"net/http"
 	"os"
 )
 
@@ -40,11 +39,8 @@ func Run() error {
 	secretHandler := handlers.NewSecretHandler(secretManager)
 
 	routes := secretHandler.Routes()
-	// Add HealthHandler to map
-	routes[cfg.HealthPath] = http.HandlerFunc(server.HealthHandler)
 
 	srv.Mount(routes)
-
 	srv.Run()
 
 	return nil

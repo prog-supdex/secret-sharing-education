@@ -37,7 +37,6 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				EnvVars:     []string{"LISTEN_PORT"},
 				Category:    "Server:",
 				Destination: &cfg.Server.ServerPort,
-				Required:    true,
 			},
 		},
 		Action: func(nc *cli.Context) error {

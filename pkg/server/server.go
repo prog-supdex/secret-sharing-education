@@ -24,6 +24,8 @@ func New(c Config) (*Server, error) {
 func (s Server) Run() {
 	err := http.ListenAndServe(s.port, s.mux)
 
+	s.mux.Handle("/healthcheck", http.HandlerFunc(HealthHandler))
+
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
