@@ -18,7 +18,7 @@ const (
 
 type mockSecretManager struct{}
 
-func (m mockSecretManager) CreateSecret(plainText string) (string, error) {
+func (m mockSecretManager) CreateSecret(_ string) (string, error) {
 	return MockId, nil
 }
 

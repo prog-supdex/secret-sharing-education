@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	DataFilePath string `env:"DATA_FILE_PATH, required"`
-	RootPath     string
+	DataFilePath string
+	rootPath     string
 }
 
 func NewConfig() *Config {
@@ -17,9 +17,9 @@ func NewConfig() *Config {
 		log.Fatal(err)
 	}
 
-	return &Config{RootPath: currentPath}
+	return &Config{rootPath: currentPath}
 }
 
 func (c Config) FullFilePath() string {
-	return path.Join(c.RootPath, c.DataFilePath)
+	return path.Join(c.rootPath, c.DataFilePath)
 }

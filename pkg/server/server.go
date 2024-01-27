@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -15,7 +16,7 @@ type RoutesMapping map[string]http.Handler
 
 func New(c Config) (*Server, error) {
 	return &Server{
-		port: c.ServerPort,
+		port: fmt.Sprintf(":%d", c.ServerPort),
 		mux:  mux.NewRouter(),
 	}, nil
 }

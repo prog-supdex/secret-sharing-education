@@ -11,12 +11,12 @@ type Config struct {
 	HealthPath string
 }
 
-func New() Config {
+func New() *Config {
 	config := Config{
 		Server:     *server.NewConfig(),
 		Filestore:  *filestore.NewConfig(),
 		HealthPath: "/healthcheck",
 	}
 
-	return config
+	return &config
 }

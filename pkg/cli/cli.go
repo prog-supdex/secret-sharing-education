@@ -1,17 +1,11 @@
 package cli
 
 import (
-	"context"
-	"errors"
 	"flag"
-	"fmt"
-	"github.com/prog-supdex/mini-project/milestone-code/pkg/config"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/filestore"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets/handlers"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/server"
-	"github.com/prog-supdex/mini-project/milestone-code/pkg/version"
-	"github.com/sethvargo/go-envconfig"
 	"net/http"
 	"os"
 )
@@ -23,19 +17,13 @@ func init() {
 }
 
 func Run() error {
-	flag.Parse()
-	if showVersion {
-		fmt.Print(version.Version())
-		os.Exit(0)
-	}
-
-	cfg, err := initConfig()
+	cfg, err, stopProgram := NewCliConfig()
 	if err != nil {
 		return err
 	}
 
-	if cfg.Filestore.DataFilePath == "" {
-		return errors.New("ENV DATA_FILE_PATH is blank")
+	if stopProgram {
+		os.Exit(0)
 	}
 
 	fileStore, err := filestore.New(cfg.Filestore.FullFilePath())
@@ -60,12 +48,4 @@ func Run() error {
 	srv.Run()
 
 	return nil
-}
-
-func initConfig() (*config.Config, error) {
-	ctx := context.Background()
-	cfg := config.New()
-	err := envconfig.Process(ctx, &cfg)
-
-	return &cfg, err
 }
