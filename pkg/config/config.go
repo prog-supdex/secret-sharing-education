@@ -8,12 +8,16 @@ import (
 type Config struct {
 	Filestore filestore.Config
 	Server    server.Config
+	LogLevel  string
+	LogKind   string
 }
 
 func New() *Config {
 	config := Config{
 		Server:    *server.NewConfig(),
 		Filestore: *filestore.NewConfig(),
+		LogLevel:  "INFO",
+		LogKind:   "Text",
 	}
 
 	return &config

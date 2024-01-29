@@ -38,6 +38,14 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				Category:    "Server:",
 				Destination: &cfg.Server.ServerPort,
 			},
+			&cli.StringFlag{
+				Name:        "log_level",
+				Usage:       "set the file_path which will store the secrets",
+				EnvVars:     []string{"LOG_LEVEL"},
+				Value:       "INFO",
+				Category:    "Logger:",
+				Destination: &cfg.LogLevel,
+			},
 		},
 		Action: func(nc *cli.Context) error {
 			helpOrVersionWereShown = false
