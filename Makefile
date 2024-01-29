@@ -30,7 +30,7 @@ build-clean:
 	rm -rf ./dist
 
 # Run server
-run:
+run: build
 	./$(OUTPUT)
 
 test:
