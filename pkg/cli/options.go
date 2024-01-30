@@ -34,7 +34,7 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				Aliases:     []string{"p"},
 				Usage:       "set the file_path which will store the secrets",
 				Value:       8080,
-				EnvVars:     []string{"LISTEN_PORT"},
+				EnvVars:     []string{"PORT"},
 				Category:    "Server:",
 				Destination: &cfg.Server.ServerPort,
 			},
