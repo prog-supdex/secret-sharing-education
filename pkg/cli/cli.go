@@ -28,7 +28,7 @@ func Run() error {
 		os.Exit(0)
 	}
 
-	logger.InitLogger(cfg.LogLevel)
+	logger.InitLogger(cfg.LogLevel, os.Stdout)
 
 	fileStore, err := filestore.New(cfg.Filestore.FullFilePath())
 	if err != nil {

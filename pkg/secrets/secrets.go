@@ -3,6 +3,7 @@ package secrets
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"log/slog"
 )
 
 type SecretData struct {
@@ -36,6 +37,7 @@ func (m manager) CreateSecret(plainText string) (string, error) {
 	data := SecretData{Id: digest, Secret: plainText}
 
 	if err := m.storage.Write(data); err != nil {
+		slog.Error("Failed to write data to the storage: " + err.Error())
 		return "", err
 	}
 
@@ -45,6 +47,7 @@ func (m manager) CreateSecret(plainText string) (string, error) {
 func (m manager) GetSecret(id string) (string, error) {
 	v, err := m.storage.Read(id)
 	if err != nil {
+		slog.Error("Failed to read from the storage:" + err.Error())
 		return "", err
 	}
 

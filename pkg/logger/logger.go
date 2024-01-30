@@ -1,11 +1,12 @@
 package logger
 
 import (
+	"io"
 	"log/slog"
 	"strings"
 )
 
-func InitLogger(level string) {
+func InitLogger(level string, output io.Writer) {
 	var programLevel = new(slog.LevelVar)
 
 	switch strings.ToUpper(level) {
@@ -27,9 +28,14 @@ func InitLogger(level string) {
 		}
 	}
 
-	logger := slog.New(NewHandler(&slog.HandlerOptions{
-		Level: programLevel,
-	}))
+	opts := PrettyHandlerOptions{
+		SlogOpts: slog.HandlerOptions{
+			Level: programLevel,
+		},
+	}
+	handler := NewPrettyHandler(output, opts)
+
+	logger := slog.New(handler)
 
 	slog.SetDefault(logger)
 }
