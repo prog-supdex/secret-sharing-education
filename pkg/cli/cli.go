@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"flag"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/filestore"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/logger"
@@ -28,7 +29,7 @@ func Run() error {
 		os.Exit(0)
 	}
 
-	logger.InitLogger(cfg.LogLevel, os.Stdout)
+	logger.InitLogger(cfg.Logger, os.Stdout)
 
 	fileStore, err := filestore.New(cfg.Filestore.FullFilePath())
 	if err != nil {
@@ -52,10 +53,12 @@ func Run() error {
 		routesKeys = append(routesKeys, k)
 	}
 
+	urlsJson, _ := json.Marshal(routesKeys)
+
 	slog.Info("Starting application",
 		"version", version.Version(),
 		"serverPort", cfg.Server.ServerPort,
-		"endpoints", routesKeys)
+		"endpoints", string(urlsJson))
 
 	srv.Mount(routes)
 	srv.Run()

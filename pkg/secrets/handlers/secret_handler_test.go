@@ -33,7 +33,9 @@ func (m mockSecretManager) GetSecret(id string) (string, error) {
 
 func TestCreateSecretHandler(t *testing.T) {
 	var logBuffer bytes.Buffer
-	logger.InitLogger("DEBUG", &logBuffer)
+	config := logger.Config{LogLevel: "DEBUG"}
+
+	logger.InitLogger(config, &logBuffer)
 
 	mockManager := mockSecretManager{}
 	h := handlers.NewSecretHandler(mockManager)
@@ -92,7 +94,9 @@ func TestCreateSecretHandler(t *testing.T) {
 
 func TestGetSecretHandler(t *testing.T) {
 	var logBuffer bytes.Buffer
-	logger.InitLogger("DEBUG", &logBuffer)
+	config := logger.Config{LogLevel: "DEBUG"}
+
+	logger.InitLogger(config, &logBuffer)
 
 	mockManager := mockSecretManager{}
 	h := handlers.NewSecretHandler(mockManager)
@@ -122,7 +126,6 @@ func TestGetSecretHandler(t *testing.T) {
 
 	t.Run("Rejects non-GET requests", func(t *testing.T) {
 		logBuffer = bytes.Buffer{}
-		logger.InitLogger("DEBUG", &logBuffer)
 
 		req := httptest.NewRequest("POST", "/"+MockId, nil)
 
@@ -140,7 +143,6 @@ func TestGetSecretHandler(t *testing.T) {
 
 	t.Run("Rejects when Secret Data is not found", func(t *testing.T) {
 		logBuffer = bytes.Buffer{}
-		logger.InitLogger("DEBUG", &logBuffer)
 
 		req := httptest.NewRequest("GET", "/"+NonExistentID, nil)
 		w := httptest.NewRecorder()

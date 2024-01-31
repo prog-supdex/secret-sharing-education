@@ -1,15 +1,19 @@
 package logger
 
 import (
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 	"io"
 	"log/slog"
+	"os"
 	"strings"
+	"time"
 )
 
-func InitLogger(level string, output io.Writer) {
+func InitLogger(config Config, output io.Writer) {
 	var programLevel = new(slog.LevelVar)
 
-	switch strings.ToUpper(level) {
+	switch strings.ToUpper(config.LogLevel) {
 	case "INFO":
 		{
 			programLevel.Set(slog.LevelInfo)
@@ -28,12 +32,11 @@ func InitLogger(level string, output io.Writer) {
 		}
 	}
 
-	opts := PrettyHandlerOptions{
-		SlogOpts: slog.HandlerOptions{
-			Level: programLevel,
-		},
-	}
-	handler := NewPrettyHandler(output, opts)
+	handler := tint.NewHandler(output, &tint.Options{
+		Level:      programLevel,
+		TimeFormat: time.Kitchen,
+		NoColor:    config.DisableColor || !isatty.IsTerminal(os.Stdout.Fd()),
+	})
 
 	logger := slog.New(handler)
 

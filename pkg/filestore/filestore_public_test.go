@@ -20,7 +20,9 @@ const (
 
 func TestRead(t *testing.T) {
 	var logBuffer bytes.Buffer
-	logger.InitLogger("DEBUG", &logBuffer)
+	config := logger.Config{LogLevel: "DEBUG"}
+
+	logger.InitLogger(config, &logBuffer)
 
 	tempFilePath, cleanup := createTempFileForTesting(t, DataFilePath)
 	defer cleanup()
@@ -53,7 +55,9 @@ func TestRead(t *testing.T) {
 
 func TestWrite(t *testing.T) {
 	var logBuffer bytes.Buffer
-	logger.InitLogger("DEBUG", &logBuffer)
+	config := logger.Config{LogLevel: "DEBUG"}
+
+	logger.InitLogger(config, &logBuffer)
 
 	tempFilePath, cleanup := createTempFileForTesting(t, DataFilePath)
 	defer cleanup()
