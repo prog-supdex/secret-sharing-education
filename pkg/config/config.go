@@ -6,17 +6,15 @@ import (
 )
 
 type Config struct {
-	Filestore  filestore.Config
-	Server     server.Config
-	HealthPath string
+	Filestore filestore.Config
+	Server    server.Config
 }
 
-func New() Config {
+func New() *Config {
 	config := Config{
-		Server:     *server.NewConfig(),
-		Filestore:  *filestore.NewConfig(),
-		HealthPath: "/healthcheck",
+		Server:    *server.NewConfig(),
+		Filestore: *filestore.NewConfig(),
 	}
 
-	return config
+	return &config
 }

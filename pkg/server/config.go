@@ -1,7 +1,7 @@
 package server
 
 type Config struct {
-	ServerPort string `env:"LISTEN_PORT, default=:8080"`
+	ServerPort int
 }
 
 func NewConfig() *Config {
