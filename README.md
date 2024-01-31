@@ -4,15 +4,31 @@ This web application allows you to create and view your secrets for a specific f
 
 ## Running the App
 
-1. `go build -o secret-app cmd/secret-share-web/main.go`
-
-2. `DATA_FILE_PATH=./data.json ./secret-app`
+1. `make`
+2. `DATA_FILE_PATH=./data.json make run`
 
 Where `DATA_FILE_PATH` is a path for a file that will store your secrets
+The default value for `DATA_FILE_PATH` is `./data.json`
 
 if needed to check the project's version, you can use flag `-v`
 ```bash
 ./secret-app -v
+```
+### Other commands:
+
+Run Golang tests
+```bash
+  make test
+```
+
+We use golangci-lint to lint Go source code:
+```bash
+  make lint
+```
+
+Run fmt
+```bash
+  make fmt
 ```
 
 ## API

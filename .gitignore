@@ -3,3 +3,4 @@ go.work
 !temp_data.json
 .idea
 secret-app
+dist

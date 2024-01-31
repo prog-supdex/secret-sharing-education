@@ -19,3 +19,8 @@ func init() {
 func Version() string {
 	return version
 }
+
+// SHA returns the build commit sha
+func SHA() string {
+	return sha
+}
