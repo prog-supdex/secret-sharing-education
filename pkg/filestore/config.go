@@ -1,7 +1,7 @@
 package filestore
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"path"
 )
@@ -14,7 +14,8 @@ type Config struct {
 func NewConfig() *Config {
 	currentPath, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Getting a rooted path name was failed: " + err.Error())
+		os.Exit(1)
 	}
 
 	return &Config{rootPath: currentPath}

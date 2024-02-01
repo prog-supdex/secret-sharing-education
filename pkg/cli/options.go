@@ -38,6 +38,22 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				Category:    "Server:",
 				Destination: &cfg.Server.ServerPort,
 			},
+			&cli.StringFlag{
+				Name:        "log_level",
+				Usage:       "set the file_path which will store the secrets",
+				EnvVars:     []string{"LOG_LEVEL"},
+				Value:       "INFO",
+				Category:    "Logger:",
+				Destination: &cfg.Logger.LogLevel,
+			},
+			&cli.BoolFlag{
+				Name:        "no_color",
+				Usage:       "set the file_path which will store the secrets",
+				EnvVars:     []string{"NO_COLOR"},
+				Value:       false,
+				Category:    "Logger:",
+				Destination: &cfg.Logger.DisableColor,
+			},
 		},
 		Action: func(nc *cli.Context) error {
 			helpOrVersionWereShown = false
