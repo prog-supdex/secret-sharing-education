@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/prog-supdex/mini-project/milestone-code/pkg/secrets"
+	"github.com/prog-supdex/mini-project/milestone-code/pkg/server"
 	"log/slog"
 	"net/http"
 )
@@ -37,16 +39,18 @@ func NewSecretHandler(s secrets.Manager) Handler {
 func (h handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	if r.Method != "POST" {
+	if r.Method == "GET" {
 		slog.Debug("Invalid request method", "request method", r.Method, "expected method", "POST")
-		w.WriteHeader(422)
+		server.RenderTemplate(w, "home", nil)
+
 		return
 	}
 
-	requestBody := RequestBodyPayload{}
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		slog.Error("Failed to decode the request body")
+	secretText, err := extractSecretFromRequest(r)
+	if err != nil {
+		slog.Error("Error request: " + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -57,29 +61,27 @@ func (h handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 		"request_uri", r.RequestURI,
 	)
 
-	digest, err := h.secretsManager.CreateSecret(requestBody.PlainText)
+	digest, err := h.secretsManager.CreateSecret(secretText)
 	if err != nil {
 		slog.Error("Failed to create secret:" + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	resp := CreateSecretResponse{Id: digest}
-
-	jd, err := json.Marshal(&resp)
-	if err != nil {
-		slog.Error("Failed to marshal response:" + err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
 	slog.Debug("Write the response", "id", digest)
 
-	_, err = w.Write(jd)
-	if err != nil {
-		slog.Error("Failed to write response:" + err.Error())
+	if r.Header.Get("Content-Type") == "application/json" {
+		resp := CreateSecretResponse{Id: digest}
+		w.Header().Set("Content-Type", "application/json")
+		err := json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			slog.Error("Failed to write response:" + err.Error())
+		}
+	} else {
+		data := map[string]interface{}{
+			"SecretID": digest,
+		}
+		server.RenderTemplate(w, "home", data)
 	}
 }
 
@@ -90,13 +92,6 @@ func (h handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.Debug("Incoming request",
-		"payload", r.Body,
-		"headers", r.Header,
-		"method", r.Method,
-		"request_uri", r.RequestURI,
-	)
-
 	vars := mux.Vars(r)
 	id := vars["hash"]
 
@@ -106,37 +101,63 @@ func (h handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decryptedSecret, err := h.secretsManager.GetSecret(id)
+	slog.Debug("Incoming request",
+		"payload", r.Body,
+		"headers", r.Header,
+		"method", r.Method,
+		"request_uri", r.RequestURI,
+	)
 
+	decryptedSecret, err := h.secretsManager.GetSecret(id)
 	if err != nil {
 		slog.Error("Failed to get secret:" + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	resp := GetSecretResponse{Data: decryptedSecret}
-	jd, err := json.Marshal(&resp)
-	if err != nil {
-		slog.Error("Failed to marshal response:" + err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if len(resp.Data) == 0 {
+	if len(decryptedSecret) == 0 {
 		slog.Debug("The Secret Data was not found")
 		w.WriteHeader(http.StatusNotFound)
 	}
 
-	_, err = w.Write(jd)
-	if err != nil {
-		slog.Error("Failed to write response:" + err.Error())
+	if r.Header.Get("Accept") == "application/json" {
+		resp := GetSecretResponse{Data: decryptedSecret}
+		w.Header().Set("Content-Type", "application/json")
+		err := json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			slog.Error("Failed to write response:" + err.Error())
+		}
+	} else {
+		data := map[string]interface{}{
+			"SecretData": decryptedSecret,
+		}
+		server.RenderTemplate(w, "secret", data)
 	}
 }
 
 func (h handler) Routes() map[string]http.Handler {
 	return map[string]http.Handler{
-		"/":                       http.HandlerFunc(h.CreateSecret),
-		"/{hash:[0-9a-fA-F]{32}}": http.HandlerFunc(h.GetSecret),
+		"/":                               http.HandlerFunc(h.CreateSecret),
+		"/{hash:[0-9a-fA-F]{32}}":         http.HandlerFunc(h.GetSecret),
+		"/secrets/{hash:[0-9a-fA-F]{32}}": http.HandlerFunc(h.GetSecret),
+	}
+}
+
+func extractSecretFromRequest(r *http.Request) (string, error) {
+	contentType := r.Header.Get("Content-Type")
+	switch {
+	case contentType == "application/json":
+		var requestBody RequestBodyPayload
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			return "", fmt.Errorf("failed to decode JSON body: %w", err)
+		}
+		return requestBody.PlainText, nil
+	case contentType == "application/x-www-form-urlencoded":
+		if err := r.ParseForm(); err != nil {
+			return "", fmt.Errorf("failed to parse form data: %w", err)
+		}
+		return r.FormValue("secret"), nil
+	default:
+		return "", fmt.Errorf("unsupported content type: %s", contentType)
 	}
 }
