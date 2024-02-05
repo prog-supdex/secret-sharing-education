@@ -1,8 +1,10 @@
 package server
 
 import (
+	"embed"
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -13,13 +15,16 @@ const (
 	LayoutFile = "layout.html"
 )
 
+//go:embed templates/*
+var templateFS embed.FS
+
 func RenderTemplate(w http.ResponseWriter, tmpl string, data map[string]interface{}) {
 	var layoutPath = filepath.Join(BasePath, LayoutFile)
 	var templatePath = filepath.Join(BasePath, tmpl+".html")
 
-	t, err := template.ParseFiles(layoutPath, templatePath)
+	t, err := template.New("layout").ParseFS(templateFS, layoutPath, templatePath)
 	if err != nil {
-		log.Print(err.Error())
+		slog.Error("Failed to parse template:" + err.Error())
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}

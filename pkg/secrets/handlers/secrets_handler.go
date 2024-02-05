@@ -40,7 +40,6 @@ func (h handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if r.Method == "GET" {
-		slog.Debug("Invalid request method", "request method", r.Method, "expected method", "POST")
 		server.RenderTemplate(w, "home", nil)
 
 		return

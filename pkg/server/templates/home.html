@@ -3,7 +3,7 @@
 {{define "body"}}
 {{if .SecretID}}
 <div class="alert alert-success" role="alert">
-  Secret created! <a href="/secrets/{{.SecretID}}">Retrieve your secret</a>.
+  Secret created! <a class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="/secrets/{{.SecretID}}">Retrieve your secret</a>.
 </div>
 {{end}}
 <form class="w-full max-w-sm space-y-2" method="POST" action="/">
