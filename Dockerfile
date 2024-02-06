@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     go build -o /dist/secret-share-web cmd/secret-share-web/main.go
 
 # Step 3: Final
-FROM scratch
+FROM gcr.io/distroless/static-debian12
 COPY --from=builder /app/tmp /tmp
 COPY --from=builder /dist/secret-share-web /secret-share-web
 
