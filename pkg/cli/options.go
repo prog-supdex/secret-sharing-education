@@ -38,6 +38,22 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				Category:    "Server:",
 				Destination: &cfg.Server.ServerPort,
 			},
+			&cli.IntFlag{
+				Name:        "rate_limit",
+				Usage:       "how many request can perform during the window of time",
+				Value:       2,
+				EnvVars:     []string{"REQUEST_LIMIT"},
+				Category:    "RateLimit:",
+				Destination: &cfg.Server.Request.RequestsLimit,
+			},
+			&cli.IntFlag{
+				Name:        "time_window",
+				Usage:       "the window of time in seconds",
+				Value:       60,
+				EnvVars:     []string{"WINDOW_TIME"},
+				Category:    "RateLimit:",
+				Destination: &cfg.Server.Request.Within,
+			},
 			&cli.StringFlag{
 				Name:        "log_level",
 				Usage:       "set the file_path which will store the secrets",

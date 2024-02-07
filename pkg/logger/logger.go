@@ -36,6 +36,7 @@ func InitLogger(config Config, output io.Writer) {
 		Level:      programLevel,
 		TimeFormat: time.Kitchen,
 		NoColor:    config.DisableColor || !isatty.IsTerminal(os.Stdout.Fd()),
+		AddSource:  true,
 	})
 
 	logger := slog.New(handler)
