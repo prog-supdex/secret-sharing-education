@@ -25,7 +25,6 @@ type ipItem struct {
 	bucket      chan bool
 	lastSeen    time.Time
 	lastFilling time.Time
-	ip          string
 }
 
 type Message struct {
@@ -92,7 +91,7 @@ func (r *rateLimiter) allow(ip string) bool {
 			"bucketSize", r.config.RequestsLimit,
 		)
 
-		item = &ipItem{bucket: r.preparedBucket(), ip: ip, lastFilling: r.clock.Now()}
+		item = &ipItem{bucket: r.preparedBucket(), lastFilling: r.clock.Now()}
 		r.IpItems[ip] = item
 
 		slog.Debug("Created ipItem bucket", "ip", ip)
@@ -140,9 +139,9 @@ func (r *rateLimiter) updateIpItemTimes(item *ipItem) {
 
 func removeExpiredIpItems(r *rateLimiter) {
 	expired := time.Duration(r.config.IpBucketLifeTimeSeconds) * time.Second
-	ticker := r.clock.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(30 * time.Second)
 
-	for range ticker.Chan() {
+	for range ticker.C {
 		r.Mu.Lock()
 		now := r.clock.Now()
 		slog.Info("Checking the IpItems state")
