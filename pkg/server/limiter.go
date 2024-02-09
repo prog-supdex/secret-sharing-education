@@ -80,6 +80,10 @@ func (r *rateLimiter) IpRateLimiter(next func(writer http.ResponseWriter, reques
 }
 
 func (r *rateLimiter) allow(ip string) bool {
+	if r.config.RequestsLimit == 0 {
+		return true
+	}
+
 	item, exists := r.IpItems[ip]
 
 	if !exists {
