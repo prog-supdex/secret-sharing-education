@@ -44,7 +44,7 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				Value:       2,
 				EnvVars:     []string{"REQUEST_LIMIT"},
 				Category:    "RateLimit:",
-				Destination: &cfg.Server.Request.RequestsLimit,
+				Destination: &cfg.Server.RequestsLimit,
 			},
 			&cli.IntFlag{
 				Name:        "time_window",
@@ -52,7 +52,15 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				Value:       60,
 				EnvVars:     []string{"WINDOW_TIME"},
 				Category:    "RateLimit:",
-				Destination: &cfg.Server.Request.Within,
+				Destination: &cfg.Server.Within,
+			},
+			&cli.IntFlag{
+				Name:        "ip_bucket_lifetime",
+				Usage:       "the lifetime of ip bucket in minutes",
+				Value:       10,
+				EnvVars:     []string{"IP_BUCKET_LIFETIME"},
+				Category:    "RateLimit:",
+				Destination: &cfg.Server.Within,
 			},
 			&cli.StringFlag{
 				Name:        "log_level",

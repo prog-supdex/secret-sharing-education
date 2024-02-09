@@ -37,7 +37,7 @@ func Run() error {
 		return err
 	}
 
-	rateLimiter := server.NewRateLimit(cfg.Server.Request)
+	rateLimiter := server.NewRateLimit(cfg.Server, nil)
 
 	srv, err := server.New(cfg.Server, rateLimiter)
 	if err != nil {

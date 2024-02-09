@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/jonboulle/clockwork"
 	"log/slog"
 	"net"
 	"net/http"
@@ -11,14 +12,20 @@ import (
 
 type RateLimiter interface {
 	IpRateLimiter(next func(writer http.ResponseWriter, request *http.Request)) http.Handler
-	allow(ip string) bool
-	fillBucket(ip string)
 }
 
 type rateLimiter struct {
-	config ConfigRequest
-	ips    map[string]chan bool
-	mu     sync.Mutex
+	config  Config
+	IpItems map[string]*ipItem
+	Mu      sync.Mutex
+	clock   clockwork.Clock
+}
+
+type ipItem struct {
+	bucket      chan bool
+	lastSeen    time.Time
+	lastFilling time.Time
+	ip          string
 }
 
 type Message struct {
@@ -26,8 +33,16 @@ type Message struct {
 	Body   string
 }
 
-func NewRateLimit(c ConfigRequest) RateLimiter {
-	return &rateLimiter{config: c, ips: make(map[string]chan bool)}
+func NewRateLimit(c Config, clock clockwork.Clock) RateLimiter {
+	if clock == nil {
+		clock = clockwork.NewRealClock()
+	}
+
+	r := &rateLimiter{config: c, IpItems: make(map[string]*ipItem), clock: clock}
+
+	go removeExpiredIpItems(r)
+
+	return r
 }
 
 func (r *rateLimiter) IpRateLimiter(next func(writer http.ResponseWriter, request *http.Request)) http.Handler {
@@ -38,12 +53,12 @@ func (r *rateLimiter) IpRateLimiter(next func(writer http.ResponseWriter, reques
 			return
 		}
 
-		r.mu.Lock()
+		r.Mu.Lock()
 
 		if !r.allow(ip) {
 			slog.Info("To many requests for IP", "ip", ip)
 
-			r.mu.Unlock()
+			r.Mu.Unlock()
 
 			message := Message{
 				Status: "Request Failed",
@@ -59,57 +74,34 @@ func (r *rateLimiter) IpRateLimiter(next func(writer http.ResponseWriter, reques
 			return
 		}
 
-		r.mu.Unlock()
+		r.Mu.Unlock()
 		next(w, req)
 	})
 }
 
 func (r *rateLimiter) allow(ip string) bool {
-	bucket, exists := r.ips[ip]
+	item, exists := r.IpItems[ip]
 
 	if !exists {
 		slog.Debug("the bucket is not exists. Creating...",
 			"ip", ip,
 			"bucketSize", r.config.RequestsLimit,
 		)
-		bucket = r.preparedBucket()
 
-		r.ips[ip] = bucket
+		item = &ipItem{bucket: r.preparedBucket(), ip: ip, lastFilling: r.clock.Now()}
+		r.IpItems[ip] = item
 
-		go r.fillBucket(ip)
+		slog.Debug("Created ipItem bucket", "ip", ip)
 	}
 
+	r.fillBucket(item)
+	r.updateIpItemTimes(item)
+
 	select {
-	case <-bucket:
+	case <-item.bucket:
 		return true
 	default:
 		return false
-	}
-}
-
-// add "token" to the bucket every "within / requestLimit". It allows us to add "tokens" gradually.
-// For example, if "within" is 60 and "requestLimit" is 2, it means that "tokens" will be added every 30 seconds, and
-// the user will be able to spend "token" every 30 seconds (or two tokens at once if tokens are collected)
-func (r *rateLimiter) fillBucket(ip string) {
-	ticker := time.NewTicker(time.Duration(r.config.Within) * time.Second / time.Duration(r.config.RequestsLimit))
-
-	for range ticker.C {
-		r.mu.Lock()
-
-		if _, exists := r.ips[ip]; !exists {
-			r.mu.Unlock()
-			ticker.Stop()
-			return
-		}
-
-		slog.Debug("Add the token to the bucket", "ip", ip)
-
-		select {
-		case r.ips[ip] <- true:
-		default:
-		}
-
-		r.mu.Unlock()
 	}
 }
 
@@ -120,4 +112,44 @@ func (r *rateLimiter) preparedBucket() chan bool {
 	}
 
 	return bucket
+}
+
+// Refill "tokens", if the needed time has passed
+func (r *rateLimiter) fillBucket(item *ipItem) {
+	now := r.clock.Now()
+
+	if now.After(item.lastFilling.Add(time.Duration(r.config.Within) * time.Second)) {
+		tokensToAdd := r.config.RequestsLimit - len(item.bucket)
+		for i := 0; i < tokensToAdd; i++ {
+			select {
+			case item.bucket <- true:
+			default:
+			}
+		}
+		item.lastFilling = now
+	}
+}
+
+func (r *rateLimiter) updateIpItemTimes(item *ipItem) {
+	item.lastSeen = r.clock.Now()
+}
+
+func removeExpiredIpItems(r *rateLimiter) {
+	expired := time.Duration(r.config.IpBucketLifeTimeSeconds) * time.Second
+	ticker := r.clock.NewTicker(30 * time.Second)
+
+	for range ticker.Chan() {
+		r.Mu.Lock()
+		now := r.clock.Now()
+		slog.Info("Checking the IpItems state")
+
+		for ip, item := range r.IpItems {
+			if now.After(item.lastSeen.Add(expired)) {
+				slog.Info("Removing unused element", "ip", ip, "expiredSeconds", expired)
+				delete(r.IpItems, ip)
+			}
+		}
+
+		r.Mu.Unlock()
+	}
 }

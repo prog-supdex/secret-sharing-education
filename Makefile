@@ -24,7 +24,7 @@ install:
 	go install ./...
 
 build:
-	go build -ldflags $(LD_FLAGS) -o $(OUTPUT) cmd/$(BINARY_NAME)/main.go
+	go build -race -ldflags $(LD_FLAGS) -o $(OUTPUT) cmd/$(BINARY_NAME)/main.go
 
 build-clean:
 	rm -rf ./dist
