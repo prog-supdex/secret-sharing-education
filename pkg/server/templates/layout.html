@@ -1,0 +1,31 @@
+{{define "layout"}}
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{{template "title"}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <header class="flex items-center justify-between p-4 bg-gray-800 text-white">
+      <h1 class="text-lg font-bold">Secret App</h1>
+      <nav><ul class="flex items-center space-x-4">
+        <li><a class="hover:underline" href="/">Home</a></li>
+        <li><a class="hover:underline" href="/secrets">Secrets</a></li>
+      </ul>
+      </nav>
+    </header>
+
+    <div class="flex flex-col h-screen">
+      <main class="flex-1 p-4 bg-gray-100">
+        <div class="flex flex-col items-center justify-center space-y-4">
+          {{template "body" .}}
+        </div>
+      </main>
+    </div>
+
+    <footer class="flex items-center justify-center py-4 bg-gray-800 text-white"><p>© {{.Year}} Secret App</p></footer>
+  </body>
+</html>
+{{end}}

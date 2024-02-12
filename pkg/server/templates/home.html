@@ -1,0 +1,18 @@
+{{define "title"}}Create a secret{{end}}
+
+{{define "body"}}
+{{if .SecretID}}
+<div class="alert alert-success" role="alert">
+  Secret created! <a class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="/secrets/{{.SecretID}}">Retrieve your secret</a>.
+</div>
+{{end}}
+<form class="w-full max-w-sm space-y-2" method="POST" action="/">
+  <div class="space-y-2">
+    <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="secret">Secret</label>
+    <textarea class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="secret" name="secret" placeholder="Enter your secret" required=""></textarea>
+  </div>
+  <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full" type="submit">
+    Generate Link
+  </button>
+</form>
+{{end}}

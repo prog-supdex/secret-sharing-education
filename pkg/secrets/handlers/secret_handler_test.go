@@ -50,6 +50,7 @@ func TestCreateSecretHandler(t *testing.T) {
 	}
 	payloadBytes, _ := json.Marshal(payload)
 	req := httptest.NewRequest("POST", "/", bytes.NewReader(payloadBytes))
+	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
@@ -70,26 +71,6 @@ func TestCreateSecretHandler(t *testing.T) {
 	if !strings.Contains(logBuffer.String(), "Write the response") {
 		t.Errorf("expected to find specific log content for CreateSecret, got: %s", logBuffer.String())
 	}
-
-	t.Run("Rejects non-POST requests", func(t *testing.T) {
-		logBuffer = bytes.Buffer{}
-
-		req, err := http.NewRequest("GET", "/", strings.NewReader(string(payloadBytes)))
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		if !strings.Contains(logBuffer.String(), "Invalid request method") {
-			t.Errorf("expected to find invalid_request log for CreateSecret, got: %s", logBuffer.String())
-		}
-
-		if w.Code != http.StatusUnprocessableEntity {
-			t.Errorf("expected to get 422 response, got: %d", w.Code)
-		}
-	})
 }
 
 func TestGetSecretHandler(t *testing.T) {
@@ -107,6 +88,7 @@ func TestGetSecretHandler(t *testing.T) {
 	}
 
 	req := httptest.NewRequest("GET", "/"+MockId, nil)
+	req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
@@ -128,7 +110,7 @@ func TestGetSecretHandler(t *testing.T) {
 		logBuffer = bytes.Buffer{}
 
 		req := httptest.NewRequest("POST", "/"+MockId, nil)
-
+		req.Header.Set("Accept", "application/json")
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
@@ -145,6 +127,7 @@ func TestGetSecretHandler(t *testing.T) {
 		logBuffer = bytes.Buffer{}
 
 		req := httptest.NewRequest("GET", "/"+NonExistentID, nil)
+		req.Header.Set("Accept", "application/json")
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
