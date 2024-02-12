@@ -1,7 +1,10 @@
 package server
 
 type Config struct {
-	ServerPort int
+	ServerPort              int
+	RequestsLimit           int
+	Within                  int
+	IpBucketLifeTimeSeconds int
 }
 
 func NewConfig() *Config {

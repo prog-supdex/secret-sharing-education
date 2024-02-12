@@ -37,7 +37,9 @@ func Run() error {
 		return err
 	}
 
-	srv, err := server.New(cfg.Server)
+	rateLimiter := server.NewRateLimit(cfg.Server, nil)
+
+	srv, err := server.New(cfg.Server, rateLimiter)
 	if err != nil {
 		slog.Error("Server initialize error: " + err.Error())
 		return err

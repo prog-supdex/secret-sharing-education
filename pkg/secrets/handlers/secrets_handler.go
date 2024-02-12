@@ -25,7 +25,7 @@ type GetSecretResponse struct {
 type Handler interface {
 	CreateSecret(w http.ResponseWriter, r *http.Request)
 	GetSecret(w http.ResponseWriter, r *http.Request)
-	Routes() map[string]http.Handler
+	Routes() map[string]http.HandlerFunc
 }
 
 type handler struct {
@@ -134,11 +134,11 @@ func (h handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h handler) Routes() map[string]http.Handler {
-	return map[string]http.Handler{
-		"/":                               http.HandlerFunc(h.CreateSecret),
-		"/{hash:[0-9a-fA-F]{32}}":         http.HandlerFunc(h.GetSecret),
-		"/secrets/{hash:[0-9a-fA-F]{32}}": http.HandlerFunc(h.GetSecret),
+func (h handler) Routes() map[string]http.HandlerFunc {
+	return map[string]http.HandlerFunc{
+		"/":                               h.CreateSecret,
+		"/{hash:[0-9a-fA-F]{32}}":         h.GetSecret,
+		"/secrets/{hash:[0-9a-fA-F]{32}}": h.GetSecret,
 	}
 }
 
