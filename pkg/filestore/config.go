@@ -4,7 +4,10 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"path/filepath"
 )
+
+const TempDirectory = "tmp"
 
 type Config struct {
 	DataFilePath string
@@ -22,5 +25,7 @@ func NewConfig() *Config {
 }
 
 func (c Config) FullFilePath() string {
-	return path.Join(c.rootPath, c.DataFilePath)
+	filename := filepath.Base(c.DataFilePath)
+
+	return path.Join(c.rootPath, TempDirectory, filename)
 }

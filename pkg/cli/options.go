@@ -25,9 +25,9 @@ func NewCliConfig() (cfg *config.Config, err error, stopProgram bool) {
 				Name:        "file_path",
 				Usage:       "set the file_path which will store the secrets",
 				EnvVars:     []string{"DATA_FILE_PATH"},
+				Value:       "data.json",
 				Category:    "Filestore:",
 				Destination: &cfg.Filestore.DataFilePath,
-				Required:    true,
 			},
 			&cli.IntFlag{
 				Name:        "port",
